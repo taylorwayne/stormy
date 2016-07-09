@@ -40,7 +40,7 @@ public class DayAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        ViewHolder  holder;
 
         if (convertView == null) {
             // brand new
