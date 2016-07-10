@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import taylorpresley.stormy.R;
+import taylorpresley.stormy.ui.DailyForecastActivity;
 import taylorpresley.stormy.weather.Day;
 
 /**
@@ -23,6 +24,10 @@ public class DayAdapter extends BaseAdapter {
         mContext = context;
         mDays = days;
     }
+
+    public DayAdapter(DailyForecastActivity context, Day days) {
+    }
+
     @Override
     public int getCount() {
         return mDays.length;
@@ -59,7 +64,14 @@ public class DayAdapter extends BaseAdapter {
 
         holder.iconImageView.setImageResource(day.getIconId());
         holder.temperatureLabel.setText(day.getTemperatureMax() + "");
-        holder.dayLabel.setText(day.getDayOfTheWeek());
+
+
+        if (position == 0) {
+            holder.dayLabel.setText("Today");
+        }
+        else {
+            holder.dayLabel.setText(day.getDayOfTheWeek());
+        }
 
         return convertView;
     }
