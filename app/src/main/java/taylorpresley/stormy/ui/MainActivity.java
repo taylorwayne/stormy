@@ -1,11 +1,17 @@
 package taylorpresley.stormy.ui;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -14,11 +20,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,7 +50,11 @@ public class MainActivity extends AppCompatActivity {
     private Forecast mForecast;
     public static final String DAILY_FORECAST = "DAILY_FORECAST";
     public static final String HOURLY_FORECAST = "HOURLY_FORECAST";
+    private int MY_PERMISSIONS_REQUEST;
 
+    private static final String[] INITIAL_PERMS={
+            Manifest.permission.ACCESS_FINE_LOCATION,
+    };
 
     @BindView(R.id.temperatureLabel) TextView mTemperatureLabel;
     @BindView(R.id.timeLabel) TextView mTimeLabel;
@@ -55,14 +69,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
         mProgressBar.setVisibility(View.INVISIBLE);
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
 
-        final double latitude = 34.7304;
-        final double longitude = -86.5861;
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST);
+        }
 
+        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        final double longitude = location.getLongitude();
+        final double latitude = location.getLatitude();
         mRefreshImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,7 +96,8 @@ public class MainActivity extends AppCompatActivity {
 
         getForecast(latitude, longitude);
         Log.d(TAG, "Taylor, Main UI code is running.");
-
+        String message = String.format("Latitude = %s, Longitude = %s",latitude + "", longitude + "");
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     private void getForecast(double latitude, double longitude) {
@@ -261,5 +286,23 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, HourlyForecastActivity.class);
         intent.putExtra(HOURLY_FORECAST, mForecast.getHourlyForecast());
         startActivity(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[],
+                                           int[] grantResults) {
+        // If request is cancelled, the result arrays are empty.
+        if (grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            // permission was granted, yay! Do the
+            // contacts-related task you need to do.
+        } else {
+
+            // permission denied, boo! Disable the
+            // functionality that depends on this permission.
+        }
+        return;
     }
 }
